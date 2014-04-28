@@ -79,7 +79,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $post['currency']           = $currency;
     $post['payment_split']      = $payment_split;
     $post['callback_url']       = $options['callback_url'];
-    $post['redirect_to']        = $options['redirect_to'];
+    $post['redirect_url']       = $options['redirect_url'];
 
     $post = json_encode($post);
     $request_uri = $options['gateway_url'] . '/api/v1/merchant/create_payment';
@@ -204,7 +204,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         $order = new WC_Order( $order_id );
 
-        $thanks_link    = get_permalink(get_option('woocommerce_thanks_page_id'));
+        $thanks_link    = $this->get_return_url($order);
         $redirect       = add_query_arg('key', $order->order_key, add_query_arg('order', $order_id, $thanks_link));
         $callback_url   = WC()->api_request_url('WC_Paymium');
         $currency       = get_woocommerce_currency();
@@ -213,9 +213,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $options = array(
           'token' =>            $this->settings['token'],
           'currency' =>         $currency,
-          'redirectURL' =>      $redirect,
+          'redirect_url' =>     $redirect,
           'callback_url' =>     $callback_url,
-          'redirect_to' =>      $redirect,
           'gateway_url' =>      $this->settings['gateway_url'],
         );
 
