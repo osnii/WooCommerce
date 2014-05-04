@@ -42,7 +42,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $header = array(
       "Content-Type: application/json",
       "Content-Length: $length",
-      'X-Paymium-Plugin: woocommerce-1.0',
+      'X-Paymium-Plugin: woocommerce-1.1',
     );
 
     curl_setopt($curl, CURLOPT_PORT, 443);
@@ -174,6 +174,17 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             case 'processing':
               $order->add_order_note('Bitcoin payment received. Awaiting network confirmation and paid status.');
               break;
+
+            case 'expired':
+              $order->update_status('cancelled');
+              $order->add_order_note('No payment was sent in the expected time-frame, the order has been cancelled.');
+              break;
+
+            case 'error':
+              $order->update_status('failed');
+              $order->add_order_note('An error occurred while processing this payment, please contact the Paymium support.');
+              break;
+
             case 'paid':
               $order->payment_complete();
               $order->add_order_note('Bitcoin payment completed. Payment credited to your merchant account.');
@@ -219,7 +230,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         );
 
         $invoice = pyCreateInvoice($order_id, $order->order_total, $currency, $payment_split, $options );
-        $order->update_status('on-hold', __('Awaiting payment notification from paymium.com', 'woothemes'));
+        $order->add_order_note(__('Awaiting payment notification from paymium.com', 'woothemes'));
 
         py_log("Created invoice:");
         py_log($invoice);
