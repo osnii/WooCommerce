@@ -3,7 +3,7 @@
 Plugin Name:  Paymium Woocommerce
 Plugin URI:   http://www.paymium.com
 Description:  This plugin adds the Paymium gateway to your Woocommerce plugin.
-Version:      1.0
+Version:      1.1
 Author:       David FRANCOIS
 Author URI:   http://www.paymium.com
 License:      MIT
