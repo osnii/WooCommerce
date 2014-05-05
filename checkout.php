@@ -14,7 +14,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
   // Writes a message to the log file
   function py_log($contents) {
     $file = plugin_dir_path(__FILE__).'paymium_log.txt';
-    file_put_contents($file, date('Y-m-m H:i:s')." : ", FILE_APPEND);
+    file_put_contents($file, date('Y-m-d H:i:s')." : ", FILE_APPEND);
 
     if (is_array($contents))
       file_put_contents($file, var_export($contents, true)."\n", FILE_APPEND);		
