@@ -3,7 +3,7 @@
 Plugin Name:  Paymium Woocommerce
 Plugin URI:   http://www.paymium.com
 Description:  This plugin adds the Paymium gateway to your Woocommerce plugin.
-Version:      1.0
+Version:      1.2
 Author:       David FRANCOIS
 Author URI:   http://www.paymium.com
 License:      MIT
@@ -80,6 +80,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $post['payment_split']      = $payment_split;
     $post['callback_url']       = $options['callback_url'];
     $post['redirect_url']       = $options['redirect_url'];
+    $post['cancel_url']         = $options['cancel_url'];
 
     $post = json_encode($post);
     $request_uri = $options['gateway_url'] . '/api/v1/merchant/create_payment';
@@ -186,6 +187,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
               break;
 
             case 'paid':
+              $order->update_status('processing');
               $order->payment_complete();
               $order->add_order_note('Bitcoin payment completed. Payment credited to your merchant account.');
               break;
@@ -226,6 +228,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
           'currency' =>         $currency,
           'redirect_url' =>     $redirect,
           'callback_url' =>     $callback_url,
+          'cancel_url' =>       $woocommerce->cart->get_cart_url(),
           'gateway_url' =>      $this->settings['gateway_url'],
         );
 
