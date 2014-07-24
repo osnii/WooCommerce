@@ -25,7 +25,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
   }
 
   // Perform a POST request to the Paymium backend
-  function doCurl($url, $post = false) {
+  function doCurl($url, $api_key, $api_secret, $post = false) {
 
     py_log('Making curl request to  : ' . $url);
     py_log('Parameters              : ' . json_encode($post));
@@ -33,16 +33,26 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $curl = curl_init($url);
     $length = 0;
 
+
+    $api_to_sign = "$api_nonce$url";
+
     if ($post) {	
       curl_setopt($curl, CURLOPT_POST, 1);
       curl_setopt($curl, CURLOPT_POSTFIELDS, $post);
       $length = strlen($post);
+      $api_to_sign = "$api_to_sign$post"
     }
+
+    $api_signature = hash_hmac('sha256', $api_to_sign, $api_secret);
+    $api_nonce = round(microtime(true) * 1000);
 
     $header = array(
       "Content-Type: application/json",
       "Content-Length: $length",
       'X-Paymium-Plugin: woocommerce-1.1',
+      "Api-Key: $api_key",
+      "Api-Nonce: $api_nonce",
+      "Api-Signature: $api_signature"
     );
 
     curl_setopt($curl, CURLOPT_PORT, 443);
@@ -71,9 +81,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
   // Create a payment request
   function pyCreateInvoice($order_id, $amount, $currency, $payment_split, $options = array()) {	
-    $postOptions = array('amount', 'currency', 'payment_split', 'token');
+    $postOptions = array('amount', 'currency', 'payment_split');
 
-    $post['token']              = $options['token'];
     $post['merchant_reference'] = $order_id;
     $post['amount']             = $amount;
     $post['currency']           = $currency;
@@ -85,7 +94,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $post = json_encode($post);
     $request_uri = $options['gateway_url'] . '/api/v1/merchant/create_payment';
 
-    $response = doCurl($request_uri, $post);
+    $response = doCurl($request_uri, $options['api_key'], $options['api_secret'], $post);
     return $response;
   }
 
@@ -126,10 +135,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             'label' => __( 'Enable Paymium', 'woothemes' ),
             'default' => 'yes'
           ),
-          'token' => array(
-            'title' => __('Merchant token', 'woothemes'),
+          'api_key' => array(
+            'title' => __('API key', 'woothemes'),
             'type' => 'text',
-            'description' => __('Enter the merchant token associated to your Paymium account'),
+            'description' => __('Enter the API key associated to your merchant API token'),
+          ),
+          'api_secret' => array(
+            'title' => __('API secret', 'woothemes'),
+            'type' => 'text',
+            'description' => __('Enter the API secret associated to your merchant API token'),
           ),
           'payment_split' => array(
             'title' => __( 'Conversion split', 'woothemes' ),
@@ -161,52 +175,58 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
       // Handles the callbacks received from the Paymium backend
       function handle_callback() {
         $req_body   = file_get_contents("php://input");
-        $signature  = $_SERVER['HTTP_X_PAYMENT_SIGNATURE'];
-        $token      = $this->settings['token'];
-        $hash       = hash('sha256', $this->settings['token'] . $req_body);
 
-        // We check that the request is legitimate and hasn't been tampered with
-        if ($signature === $hash) {
-          $decoded  = json_decode($req_body, true);
-          $order    = new WC_Order($decoded['merchant_reference']);
-          py_log($order);
+        $decoded  = json_decode($req_body, true);
+        $order    = new WC_Order($decoded['merchant_reference']);
+        py_log($order);
 
-          switch($decoded['state']) {
-            case 'processing':
-              $order->add_order_note('Bitcoin payment received. Awaiting network confirmation and paid status.');
-              break;
+        $invoice_id = $decoded['id'];
 
-            case 'expired':
-              $order->update_status('cancelled');
-              $order->add_order_note('No payment was sent in the expected time-frame, the order has been cancelled.');
-              break;
+        $api_key = $this->settings['api_key'];
+        $api_secret = $this->settings['api_secret'];
 
-            case 'error':
-              $order->update_status('failed');
-              $order->add_order_note('An error occurred while processing this payment, please contact the Paymium support.');
-              break;
+        $queried = doCurl("/api/v1/user/invoices/$invoice_id", $api_key, $api_secret);
 
-            case 'paid':
-              $order->update_status('processing');
-              $order->payment_complete();
-              $order->add_order_note('Bitcoin payment completed. Payment credited to your merchant account.');
-              break;
-          }
+        $error = false;
+
+        if ($queried['id'] != $order->id) {
+          $error = true;
         }
-        else {
-          py_log("Signature verification failure for invoice callback");
 
-          py_log("Request body:");
+        if ($queried['currency'] != $order->currency) {
+          $error = true;
+        }
+
+        if ($queried['amount'] != $order->amount) {
+          $error = true;
+        }
+
+        if ($error) {
+          py_log('Incorrect callback');
           py_log($req_body);
+          die();
+        }
 
-          py_log("Our merchant token:");
-          py_log($token);
+        switch($queried['state']) {
+        case 'processing':
+          $order->add_order_note('Bitcoin payment received. Awaiting network confirmation and paid status.');
+          break;
 
-          py_log("X-Payment-Signature header:");
-          py_log($signature);
+        case 'expired':
+          $order->update_status('cancelled');
+          $order->add_order_note('No payment was sent in the expected time-frame, the order has been cancelled.');
+          break;
 
-          py_log("Calculated hash:");
-          py_log($hash);
+        case 'error':
+          $order->update_status('failed');
+          $order->add_order_note('An error occurred while processing this payment, please contact the Paymium support.');
+          break;
+
+        case 'paid':
+          $order->update_status('processing');
+          $order->payment_complete();
+          $order->add_order_note('Bitcoin payment completed. Payment credited to your merchant account.');
+          break;
         }
       }
 
@@ -224,7 +244,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $payment_split  = $this->settings['payment_split']/100;
 
         $options = array(
-          'token' =>            $this->settings['token'],
+          'api_key' =>          $this->settings['api_key'],
+          'api_secret' =>       $this->settings['api_secret'],
           'currency' =>         $currency,
           'redirect_url' =>     $redirect,
           'callback_url' =>     $callback_url,
