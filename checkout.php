@@ -33,33 +33,38 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $curl = curl_init($url);
     $length = 0;
 
-
-    $api_to_sign = "$api_nonce$url";
+    $api_nonce = round(microtime(true) * 1000);
+    $api_to_sign = $api_nonce . $url;
 
     if ($post) {	
       curl_setopt($curl, CURLOPT_POST, 1);
       curl_setopt($curl, CURLOPT_POSTFIELDS, $post);
       $length = strlen($post);
-      $api_to_sign = "$api_to_sign$post"
+      $api_to_sign = "$api_to_sign$post";
     }
 
     $api_signature = hash_hmac('sha256', $api_to_sign, $api_secret);
-    $api_nonce = round(microtime(true) * 1000);
 
     $header = array(
       "Content-Type: application/json",
       "Content-Length: $length",
-      'X-Paymium-Plugin: woocommerce-1.1',
-      "Api-Key: $api_key",
+      'X-Paymium-Plugin: woocommerce-1.2',
+      "Api-Token: $api_key",
       "Api-Nonce: $api_nonce",
       "Api-Signature: $api_signature"
     );
 
-    curl_setopt($curl, CURLOPT_PORT, 443);
+    if (parse_url($url)['scheme'] == 'https') {
+      curl_setopt($curl, CURLOPT_PORT, 443);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+    }
+    else {
+      curl_setopt($curl, CURLOPT_PORT, 80);
+    }
+
     curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
     curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_FORBID_REUSE, 1);
     curl_setopt($curl, CURLOPT_FRESH_CONNECT, 1);
@@ -174,40 +179,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
       // Handles the callbacks received from the Paymium backend
       function handle_callback() {
-        $req_body   = file_get_contents("php://input");
+        $callback_body  = file_get_contents("php://input");
+        $invoice_id     = json_decode($callback_body, true)['uuid'];
 
-        $decoded  = json_decode($req_body, true);
-        $order    = new WC_Order($decoded['merchant_reference']);
+        py_log('------- HANDLING CALLBACK -------');
+        py_log('Invoice ID : ' . $invoice_id);
+
+        $api_key      = $this->settings['api_key'];
+        $api_secret   = $this->settings['api_secret'];
+        $gateway_url  = $this->settings['gateway_url'];
+        $invoice      = doCurl("$gateway_url/api/v1/merchant/get_payment_private/$invoice_id", $api_key, $api_secret);
+
+        $order    = new WC_Order($invoice['merchant_reference']);
         py_log($order);
+        py_log('State : ' . $invoice['state']);
 
-        $invoice_id = $decoded['id'];
-
-        $api_key = $this->settings['api_key'];
-        $api_secret = $this->settings['api_secret'];
-
-        $queried = doCurl("/api/v1/user/invoices/$invoice_id", $api_key, $api_secret);
-
-        $error = false;
-
-        if ($queried['id'] != $order->id) {
-          $error = true;
-        }
-
-        if ($queried['currency'] != $order->currency) {
-          $error = true;
-        }
-
-        if ($queried['amount'] != $order->amount) {
-          $error = true;
-        }
-
-        if ($error) {
-          py_log('Incorrect callback');
-          py_log($req_body);
-          die();
-        }
-
-        switch($queried['state']) {
+        switch($invoice['state']) {
         case 'processing':
           $order->add_order_note('Bitcoin payment received. Awaiting network confirmation and paid status.');
           break;
@@ -228,6 +215,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
           $order->add_order_note('Bitcoin payment completed. Payment credited to your merchant account.');
           break;
         }
+
+        py_log('------- DONE HANDLING CBK -------');
       }
 
       // Create an invoice, and redirect to it
