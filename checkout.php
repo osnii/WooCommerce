@@ -160,7 +160,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             'title' => __( 'Gateway URL', 'woothemes' ),
             'type' => 'text',
             'description' => __( 'It\'s usually not necessary to change this', 'woothemes' ),
-            'default' => __( 'https://bitcoin-central.net', 'woothemes' )
+            'default' => __( 'https://paymium.com', 'woothemes' )
           ),
           'title' => array(
             'title' => __( 'Title', 'woothemes' ),
