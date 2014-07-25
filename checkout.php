@@ -48,7 +48,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     $header = array(
       "Content-Type: application/json",
       "Content-Length: $length",
-      'X-Paymium-Plugin: woocommerce-1.2',
+      'X-Paymium-Plugin: woocommerce-1.3.0',
       "Api-Token: $api_key",
       "Api-Nonce: $api_nonce",
       "Api-Signature: $api_signature"
