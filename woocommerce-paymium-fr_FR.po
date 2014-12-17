@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Paymium WooCommerce v1.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2014-12-17 14:03:21+0000\n"
+"Last-Translator: user <user@example.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: CSL v1.x\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;\n"
+"X-Poedit-Basepath: \n"
+"X-Poedit-Bookmarks: \n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Textdomain-Support: yes"
+
+#. translators: plugin header field 'PluginURI'
+#. translators: plugin header field 'AuthorURI'
+#: checkout.php:0
+#@ woocommerce-paymium
+msgid "http://www.paymium.com"
+msgstr "http://www.paymium.com"
+
+#. translators: plugin header field 'Description'
+#: checkout.php:0
+#@ woocommerce-paymium
+msgid "This plugin adds the Paymium gateway to your WooCommerce plugin."
+msgstr "Ce module ajoute Paymium parmi les moyens de paiement disponibles afin de pouvoir accepter le Bitcoin"
+
+#. translators: plugin header field 'Author'
+#: checkout.php:0
+#@ woocommerce-paymium
+msgid "Paymium"
+msgstr "Paymium"
+
+#. translators: plugin header field 'Version'
+#: checkout.php:0
+#@ woocommerce-paymium
+msgid "1.3"
+msgstr "1.3"
+
+#: checkout.php:148
+#@ woocommerce-paymium
+msgid "Enable/Disable"
+msgstr "Activer/Désactiver"
+
+#: checkout.php:150
+#@ woocommerce-paymium
+msgid "Enable Paymium"
+msgstr "Activer Paymium"
+
+#: checkout.php:154
+#@ woocommerce-paymium
+msgid "API key"
+msgstr "Token d'API"
+
+#: checkout.php:156
+#@ woocommerce-paymium
+msgid "Enter the API key associated to your merchant API token"
+msgstr "Rentrez le token d'API associé à votre compte marchand"
+
+#: checkout.php:159
+#@ woocommerce-paymium
+msgid "API secret"
+msgstr "Clef secrète"
+
+#: checkout.php:161
+#@ woocommerce-paymium
+msgid "Enter the API secret associated to your merchant API token"
+msgstr "Votre clef secrète est associée au token d'API (elle n'est affichée qu'une fois, au moment de la génération du token)"
+
+#: checkout.php:164
+#@ woocommerce-paymium
+msgid "Currency conversion"
+msgstr "Conversion"
+
+#: checkout.php:166
+#@ woocommerce-paymium
+msgid "Decide whether you want to receive payments in Bitcoin or in EUR"
+msgstr "Paramétrez la conversion automatique des paiements entrants"
+
+#: checkout.php:169
+#@ woocommerce-paymium
+msgid "Convert to EUR"
+msgstr "Convertir en EUR"
+
+#: checkout.php:170
+#@ woocommerce-paymium
+msgid "Keep in Bitcoin"
+msgstr "Conserver en Bitcoin"
+
+#: checkout.php:174
+#@ woocommerce-paymium
+msgid "Gateway URL"
+msgstr "URL de la passerelle"
+
+#: checkout.php:176
+#@ woocommerce-paymium
+msgid "It's usually not necessary to change this"
+msgstr "Ne changez pas cette valeur à moins d'y avoir été invité par le support Paymium"
+
+#: checkout.php:177
+#@ woocommerce-paymium
+msgid "https://paymium.com"
+msgstr "https://paymium.com"
+
+#: checkout.php:180
+#@ woocommerce-paymium
+msgid "Title"
+msgstr "Titre"
+
+#: checkout.php:182
+#@ woocommerce-paymium
+msgid "This controls the title which the user sees during checkout."
+msgstr "Intitulé du moyen de paiement affiché au client"
+
+#: checkout.php:183
+#@ woocommerce-paymium
+msgid "Bitcoin"
+msgstr "Bitcoin"
+
+#: checkout.php:186
+#@ woocommerce-paymium
+msgid "Customer Message"
+msgstr "Message client"
+
+#: checkout.php:188
+#@ woocommerce-paymium
+msgid "Message to explain how the customer will be paying for the purchase."
+msgstr "Texte explicatif pour le paiement Bitcoin"
+
+#: checkout.php:189
+#@ woocommerce-paymium
+msgid "You will be presented a Bitcoin address to which you should send your payment."
+msgstr "Une adresse Bitcoin à laquelle envoyer votre paiement va vous être affichée"
+
+#: checkout.php:260
+#@ woocommerce-paymium
+msgid "Awaiting payment notification from paymium.com"
+msgstr "En attente de notification du paiement par Paymium"
+
+#: checkout.php:268
+#@ woocommerce-paymium
+msgid "Error creating invoice.  Please try again or try another payment method."
+msgstr "Erreur de création du paiement. Réessayez ultérieurement ou choisissez un autre moyen de paiement."
+
+#: checkout.php:282
+#@ woocommerce-paymium
+msgid "Bitcoin Payment"
+msgstr "Paiement Bitcoin"
+
+#: checkout.php:283
+#@ woocommerce-paymium
+msgid "Allows bitcoin payments via Paymium.com"
+msgstr "Rend possible le paiement en Bitcoin via Paymium"
+
+#. translators: plugin header field 'Name'
+#: checkout.php:0
+#@ woocommerce-paymium
+msgid "Paymium WooCommerce"
+msgstr "Paymium WooCommerce"
+

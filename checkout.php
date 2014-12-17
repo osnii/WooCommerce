@@ -1,13 +1,18 @@
 <?php
-/*
-Plugin Name:  Paymium Woocommerce
-Plugin URI:   http://www.paymium.com
-Description:  This plugin adds the Paymium gateway to your Woocommerce plugin.
-Version:      1.2
-Author:       David FRANCOIS
-Author URI:   http://www.paymium.com
-License:      MIT
-*/
+/**
+ * Plugin Name:  Paymium WooCommerce
+ * Plugin URI:   http://www.paymium.com
+ * Description:  This plugin adds the Paymium gateway to your WooCommerce plugin.
+ * Version:      1.3
+ * Author:       Paymium
+ * Author URI:   http://www.paymium.com
+ * License:      MIT
+ *
+ * Text Domain: woocommerce-paymium
+ * Domain Path: /i18n/languages/
+ *
+ */
+
 
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins' )))) {
 
@@ -103,6 +108,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     return $response;
   }
 
+  function load_paymium_i18n() {
+    $plugin_dir = basename(dirname(__FILE__));
+    load_plugin_textdomain( 'woocommerce-paymium', false, $plugin_dir );
+  }
+
   function declareWooPaymium() 
   {
     if (!class_exists('WC_Payment_Gateways')) 
@@ -135,44 +145,48 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
       function init_form_fields() {
         $this->form_fields = array(
           'enabled' => array(
-            'title' => __( 'Enable/Disable', 'woothemes' ),
+            'title' => __( 'Enable/Disable', 'woocommerce-paymium' ),
             'type' => 'checkbox',
-            'label' => __( 'Enable Paymium', 'woothemes' ),
+            'label' => __( 'Enable Paymium', 'woocommerce-paymium' ),
             'default' => 'yes'
           ),
           'api_key' => array(
-            'title' => __('API key', 'woothemes'),
+            'title' => __('API key', 'woocommerce-paymium'),
             'type' => 'text',
-            'description' => __('Enter the API key associated to your merchant API token'),
+            'description' => __('Enter the API key associated to your merchant API token', 'woocommerce-paymium'),
           ),
           'api_secret' => array(
-            'title' => __('API secret', 'woothemes'),
+            'title' => __('API secret', 'woocommerce-paymium'),
             'type' => 'text',
-            'description' => __('Enter the API secret associated to your merchant API token'),
+            'description' => __('Enter the API secret associated to your merchant API token', 'woocommerce-paymium'),
           ),
           'payment_split' => array(
-            'title' => __( 'Conversion split', 'woothemes' ),
-            'type' => 'number',
-            'description' => __( 'The percentage of funds to convert from BTC to the chosen currency', 'woothemes' ),
-            'default' => 100
-          ),
+            'title' => __( 'Currency conversion', 'woocommerce-paymium' ),
+            'type' => 'select',
+            'description' => __( 'Decide whether you want to receive payments in Bitcoin or in EUR', 'woocommerce-paymium' ),
+            'default' => '1',
+	    'options' => array(
+		'1' => __( 'Convert to EUR', 'woocommerce-paymium' ),
+		'0' => __( 'Keep in Bitcoin', 'woocommerce-paymium' )
+	    ),
+	  ),
           'gateway_url' => array(
-            'title' => __( 'Gateway URL', 'woothemes' ),
+            'title' => __( 'Gateway URL', 'woocommerce-paymium' ),
             'type' => 'text',
-            'description' => __( 'It\'s usually not necessary to change this', 'woothemes' ),
-            'default' => __( 'https://paymium.com', 'woothemes' )
+            'description' => __( 'It\'s usually not necessary to change this', 'woocommerce-paymium' ),
+            'default' => __( 'https://paymium.com', 'woocommerce-paymium' )
           ),
           'title' => array(
-            'title' => __( 'Title', 'woothemes' ),
+            'title' => __( 'Title', 'woocommerce-paymium' ),
             'type' => 'text',
-            'description' => __( 'This controls the title which the user sees during checkout.', 'woothemes' ),
-            'default' => __( 'Bitcoin', 'woothemes' )
+            'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-paymium' ),
+            'default' => __( 'Bitcoin', 'woocommerce-paymium' )
           ),
           'description' => array(
-            'title' => __( 'Customer Message', 'woothemes' ),
+            'title' => __( 'Customer Message', 'woocommerce-paymium' ),
             'type' => 'textarea',
-            'description' => __( 'Message to explain how the customer will be paying for the purchase.', 'woothemes' ),
-            'default' => __( 'You will be presented a Bitcoin address to which you should send your payment.', 'woothemes' )
+            'description' => __( 'Message to explain how the customer will be paying for the purchase.', 'woocommerce-paymium' ),
+            'default' => __( 'You will be presented a Bitcoin address to which you should send your payment.', 'woocommerce-paymium' )
           ),
         );
       }
@@ -243,7 +257,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         );
 
         $invoice = pyCreateInvoice($order_id, $order->order_total, $currency, $payment_split, $options );
-        $order->add_order_note(__('Awaiting payment notification from paymium.com', 'woothemes'));
+        $order->add_order_note(__('Awaiting payment notification from paymium.com', 'woocommerce-paymium'));
 
         py_log("Created invoice:");
         py_log($invoice);
@@ -251,7 +265,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         if (isset($invoice['errors']))
         {
           $order->add_order_note(var_export($invoice['errors'], true));
-          $woocommerce->add_error(__('Error creating invoice.  Please try again or try another payment method.'));
+          $woocommerce->add_error(__('Error creating invoice.  Please try again or try another payment method.', 'woocommerce-paymium'));
         }
         else {
           $woocommerce->cart->empty_cart();
@@ -265,8 +279,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
       public function admin_options() {
         ?>
-          <h3><?php _e('Bitcoin Payment', 'woothemes'); ?></h3>
-          <p><?php _e('Allows bitcoin payments via Paymium.com', 'woothemes'); ?></p>
+          <h3><?php _e('Bitcoin Payment', 'woocommerce-paymium'); ?></h3>
+          <p><?php _e('Allows bitcoin payments via Paymium.com', 'woocommerce-paymium'); ?></p>
 
           <table class="form-table">
             <?php $this->generate_settings_html(); ?>
@@ -284,5 +298,5 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
   add_filter('woocommerce_payment_gateways', 'add_paymium_gateway' );
   add_action('plugins_loaded', 'declareWooPaymium', 0);
-
+  add_action('plugins_loaded', 'load_paymium_i18n');
 }
