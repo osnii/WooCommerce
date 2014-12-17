@@ -244,7 +244,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $redirect       = add_query_arg('key', $order->order_key, add_query_arg('order', $order_id, $thanks_link));
         $callback_url   = WC()->api_request_url('WC_Paymium');
         $currency       = get_woocommerce_currency();
-        $payment_split  = $this->settings['payment_split']/100;
+        $payment_split  = intval($this->settings['payment_split']);
 
         $options = array(
           'api_key' =>          $this->settings['api_key'],
